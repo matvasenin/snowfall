@@ -1,0 +1,26 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Testing
+*.test
+
+# Code Coverage
+*.out
+coverage.*
+*.coverprofile
+profile.cov
+
+# Workspace
+go.work
+go.work.sum
+
+# Environment
+.env*
+
+# IDEs
+.idea/
+.vscode/
