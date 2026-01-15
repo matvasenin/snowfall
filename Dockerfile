@@ -35,4 +35,4 @@ WORKDIR /app
 COPY --from=builder /app/main .
 
 # Run the server
-CMD [". /main"]
+CMD ["/app/main"]
