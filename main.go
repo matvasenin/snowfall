@@ -19,7 +19,6 @@ import (
 	"github.com/joho/godotenv"
 )
 
-var config = utils.Config
 var logger = utils.Logger
 var loggerConfig = schemas.ConfigLog{}
 
@@ -79,16 +78,17 @@ func main() {
 
 	// Записываем значения из переменных окружения в структуру с настройками
 	logger.Info("Config: Reading the environment variables...")
-	config.Host = utils.Getenv("SF_HOST", "127.0.0.1:8080")
-	config.InCheck = utils.Getenv("SF_IN_CHECK", "on")
-	config.InTransport = os.Getenv("SF_IN_TRANSPORT")
-	config.OutCheck = utils.Getenv("SF_OUT_CHECK", "on")
-	config.OutTransport = os.Getenv("SF_OUT_TRANSPORT")
-	config.OutCommand = strings.Split(os.Getenv("SF_OUT_CMD"), " ")
-	config.OutEndpoint = os.Getenv("SF_OUT_URL")
-	config.Audit = utils.Getenv("SF_AUDIT", "off")
-	config.AuditEndpoint = os.Getenv("SF_AUDIT_URL")
-	config.AuditThreshold, err = strconv.Atoi(utils.Getenv("SF_AUDIT_THRESHOLD", "80"))
+	utils.Config.Host = utils.Getenv("SF_HOST", "127.0.0.1:8080")
+	utils.Config.InCheck = utils.Getenv("SF_IN_CHECK", "on")
+	utils.Config.InTransport = os.Getenv("SF_IN_TRANSPORT")
+	utils.Config.OutCheck = utils.Getenv("SF_OUT_CHECK", "on")
+	utils.Config.OutTransport = os.Getenv("SF_OUT_TRANSPORT")
+	utils.Config.OutCommand = strings.Split(os.Getenv("SF_OUT_CMD"), " ")
+	utils.Config.OutEndpoint = os.Getenv("SF_OUT_URL")
+	utils.Config.Audit = utils.Getenv("SF_AUDIT", "off")
+	utils.Config.AuditEndpoint = os.Getenv("SF_AUDIT_URL")
+	utils.Config.AuditToken = os.Getenv("SF_AUDIT_TOKEN")
+	utils.Config.AuditThreshold, err = strconv.Atoi(utils.Getenv("SF_AUDIT_THRESHOLD", "80"))
 	if err != nil {
 		logger.Fatal(
 			"Parsing failed:",
@@ -101,7 +101,7 @@ func main() {
 
 	// Проверяем переданные параметры на корректность
 	logger.Info("Config: Validating the provided parameters...")
-	err = validate.Struct(config)
+	err = validate.Struct(utils.Config)
 	if err != nil {
 		validationErrors, exists := err.(validator.ValidationErrors)
 		if exists {
@@ -113,7 +113,7 @@ func main() {
 			)
 		}
 	}
-	if config.InTransport == "stdio" && config.OutTransport == "stdio" {
+	if utils.Config.InTransport == "stdio" && utils.Config.OutTransport == "stdio" {
 		logger.Fatal(
 			"Checkup failed:",
 			"reason", "MULTIPLE_STDIO",
@@ -129,9 +129,9 @@ func main() {
 	// - HTTP-клиент (STDIO -> HTTP);
 	// - HTTP-сервер (HTTP -> STDIO).
 	// Заметьте, STDIO -> STDIO быть не должно.
-	if config.InTransport == "http" && config.OutTransport == "http" {
+	if utils.Config.InTransport == "http" && utils.Config.OutTransport == "http" {
 		logger.Info("Startup: Initilizing proxy server...")
-		serverURL, _ := url.Parse(config.OutEndpoint)
+		serverURL, _ := url.Parse(utils.Config.OutEndpoint)
 		proxy := &httputil.ReverseProxy{}
 		// Настраиваем перехватчик сообщений вида "Запрос" (Request)
 		proxy.Director = func(req *http.Request) {
@@ -139,7 +139,7 @@ func main() {
 			// - Она включена для входа;
 			// - Тип HTTP-запроса - POST;
 			// - Запрос несёт полезную нагрузку - "Тело" (Body).
-			if config.InCheck == "on" && req.Method == http.MethodPost && req.Body != nil {
+			if utils.Config.InCheck == "on" && req.Method == http.MethodPost && req.Body != nil {
 				// Читаем тело в виде байтов
 				bodyBytes, _ := io.ReadAll(req.Body)
 				// Проверяем на сущестование извлечённых байтов
@@ -162,7 +162,7 @@ func main() {
 			// - Она включена для выхода;
 			// - Тип HTTP-запроса - POST;
 			// - Ответ несёт полезную нагрузку - "Тело" (Body).
-			if config.OutCheck == "on" && resp.Request.Method == http.MethodPost && resp.Body != nil {
+			if utils.Config.OutCheck == "on" && resp.Request.Method == http.MethodPost && resp.Body != nil {
 				// Читаем тело в виде байтов
 				bodyBytes, _ := io.ReadAll(resp.Body)
 				// Проверяем на сущестование извлечённых байтов
@@ -180,14 +180,14 @@ func main() {
 			return nil
 		}
 		logger.Info("Startup: Server was initialized successfully.")
-		logger.Info("Startup: Launching the proxy server...")
-		err = http.ListenAndServe(config.Host, proxy)
+		logger.Info(fmt.Sprintf("Startup: Launching the proxy server on %s...", utils.Config.Host))
+		err = http.ListenAndServe(utils.Config.Host, proxy)
 		if err != nil {
 			logger.Fatal("Proxy crashed:", "error", err)
 		}
-	} else if config.InTransport == "stdio" {
+	} else if utils.Config.InTransport == "stdio" {
 		// TODO: Implement plain HTTP Server
-	} else if config.OutTransport == "stdio" {
+	} else if utils.Config.OutTransport == "stdio" {
 		// TODO: Implement plain HTTP Client
 	}
 }
