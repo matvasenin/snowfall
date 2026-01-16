@@ -15,5 +15,7 @@ type Config struct {
 	OutTransport   string   `validate:"oneof=http stdio"`
 	Audit          string   `validate:"oneof=on off"`
 	AuditEndpoint  string   `validate:"required_if=Audit on,url"`
+	AuditToken     string   `validate:"required_if=Audit on"`
 	AuditThreshold int      `validate:"required_if=Audit on,number,min=0,max=100"`
+	AuditTimeout   int      `validate:"number,min=0"`
 }
