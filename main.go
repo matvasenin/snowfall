@@ -19,7 +19,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-var config = schemas.Config{}
+var config = utils.Config
 var logger = utils.Logger
 var loggerConfig = schemas.ConfigLog{}
 
@@ -121,7 +121,7 @@ func main() {
 		)
 	}
 	logger.Info(
-		fmt.Sprintf("Config: All %d parameters are valid.", reflect.TypeFor[Config]().NumField()),
+		fmt.Sprintf("Config: All %d parameters are valid.", reflect.TypeFor[schemas.Config]().NumField()),
 	)
 
 	// В зависимости от транспортов могут быть использованы:
