@@ -45,7 +45,7 @@ type MCPRequestParams struct {
 }
 type MCPRequest struct {
 	JsonRPCVersion string           `json:"jsonrpc" validate:"eq=2.0"`
-	ID             uint32           `json:"id" validate:"number"`
+	ID             uint             `json:"id" validate:"number"`
 	Method         string           `json:"method" validate:"ascii"`
 	Params         MCPRequestParams `json:"params"`
 }
@@ -58,12 +58,12 @@ type MCPResponseResult struct {
 	Resources    []MCPResource         `json:"resources"`
 }
 type MCPResponseError struct {
-	Code    int16  `json:"code"`
+	Code    int    `json:"code"`
 	Message string `json:"message"`
 }
 type MCPResponse struct {
 	JsonRPCVersion  string            `json:"jsonrpc" validate:"eq=2.0"`
-	ID              uint32            `json:"id" validate:"number"`
+	ID              uint              `json:"id" validate:"number"`
 	Result          MCPResponseResult `json:"result"`
 	ProtocolVersion string            `json:"protocolVersion" validate:"len=0|datetime=2006-01-02"`
 	Error           MCPResponseError  `json:"error"`
