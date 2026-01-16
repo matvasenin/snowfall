@@ -19,27 +19,9 @@ import (
 	"github.com/joho/godotenv"
 )
 
-type ConfigLog struct {
-	Mode     string `validate:"oneof=both stderr file"`
-	Filename string `validate:"required_unless=Mode stderr"`
-	Level    string `validate:"oneof=fatal error warn info debug"`
-}
-type Config struct {
-	Host          string   `validate:"hostname_port"`
-	InCheck       string   `validate:"oneof=on off"`
-	InTransport   string   `validate:"oneof=http stdio"`
-	OutCheck      string   `validate:"oneof=on off"`
-	OutCommand    []string `validate:"required_if=OutCheck on OutTransport stdio,dive"`
-	OutEndpoint   string   `validate:"required_if=OutCheck on OutTransport http,url"`
-	OutTransport  string   `validate:"oneof=http stdio"`
-	Audit         string   `validate:"oneof=on off"`
-	AuditEndpoint string   `validate:"required_if=Audit on,url"`
-	AuditTreshold int      `validate:"required_if=Audit on,number,min=0,max=100"`
-}
-
-var config = Config{}
+var config = schemas.Config{}
 var logger = utils.Logger
-var loggerConfig = ConfigLog{}
+var loggerConfig = schemas.ConfigLog{}
 
 func main() {
 	// Инициализируем валидатор
@@ -106,13 +88,13 @@ func main() {
 	config.OutEndpoint = os.Getenv("SF_OUT_URL")
 	config.Audit = utils.Getenv("SF_AUDIT", "off")
 	config.AuditEndpoint = os.Getenv("SF_AUDIT_URL")
-	config.AuditTreshold, err = strconv.Atoi(utils.Getenv("SF_AUDIT_TRESHOLD", "80"))
+	config.AuditThreshold, err = strconv.Atoi(utils.Getenv("SF_AUDIT_THRESHOLD", "80"))
 	if err != nil {
 		logger.Fatal(
-			"Read failed:",
-			"field", "SF_AUDIT_TRESHOLD",
-			"value", os.Getenv("SF_AUDIT_TRESHOLD"),
-			"reason", "INCORRECT_NUMBER",
+			"Parsing failed:",
+			"field", "SF_AUDIT_THRESHOLD",
+			"value", os.Getenv("SF_AUDIT_THRESHOLD"),
+			"reason", "NOT_A_NUMBER",
 		)
 	}
 	logger.Info("Config: Environment variables were loaded.")
